@@ -1,0 +1,68 @@
+# Enable URL rewriting
+RewriteEngine On
+
+# Base directory
+RewriteBase /
+
+# Protect sensitive files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Protect config directory
+<FilesMatch "^(database\.php|db_setup\.php)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevent directory listing
+Options -Indexes
+
+# Protect against script injection
+<IfModule mod_headers.c>
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:;"
+</IfModule>
+
+# Secure cookies
+<IfModule mod_php.c>
+    php_value session.cookie_httponly 1
+    php_value session.cookie_secure 1
+    php_value session.use_only_cookies 1
+</IfModule>
+
+# Error handling
+ErrorDocument 404 /error.php
+ErrorDocument 403 /error.php
+ErrorDocument 500 /error.php
+
+# Protect sensitive directories
+<FilesMatch "\.(htaccess|htpasswd|ini|log|sh|inc|bak)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Force HTTPS (uncomment in production)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# PHP settings
+<IfModule mod_php.c>
+    php_flag display_errors off
+    php_value max_execution_time 30
+    php_value max_input_time 60
+    php_value max_input_vars 1000
+    php_value memory_limit 128M
+    php_value post_max_size 8M
+    php_value upload_max_filesize 2M
+    php_flag session.use_strict_mode On
+</IfModule>
+
+# Allow access to these file types
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
